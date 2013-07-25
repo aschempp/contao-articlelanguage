@@ -1,36 +1,31 @@
-<?php if (!defined('TL_ROOT')) die('You can not access this file directly!');
+<?php
 
 /**
- * TYPOlight webCMS
- * Copyright (C) 2005-2009 Leo Feyer
+ * Contao Open Source CMS
+ * Copyright (C) 2005-2010 Leo Feyer
  *
- * This program is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation, either
- * version 2.1 of the License, or (at your option) any later version.
- * 
+ * Formerly known as TYPOlight Open Source CMS.
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program. If not, please visit the Free
- * Software Foundation website at http://www.gnu.org/licenses/.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
  *
  * PHP version 5
- * @copyright  Andreas Schempp 2009
- * @author     Andreas Schempp <andreas@schempp.ch
- * @license    http://opensource.org/licenses/lgpl-3.0.html
- * @version    $Id$
+ * @copyright  terminal42 gmbh 2009-2013
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
+ * @author     Kamil Kuźmiński <kamil.kuzminski@terminal42.ch>
+ * @license    LGPL
  */
 
+namespace Contao;
 
-class ModuleArticleLanguage extends ModuleChangeLanguage
+
+class ModuleArticleLanguage extends \ModuleChangeLanguage
 {
 	protected $strTemplate = 'mod_articlelanguage';
-	
-	
+
+
 	public function generate()
 	{
 		if (TL_MODE == 'BE')
@@ -45,11 +40,11 @@ class ModuleArticleLanguage extends ModuleChangeLanguage
 
 			return $objTemplate->parse();
 		}
-		
+
 		return parent::generate();
 	}
-	
-	
+
+
 	protected function compile()
 	{
 		if (isset($_GET['alng']))
@@ -57,11 +52,11 @@ class ModuleArticleLanguage extends ModuleChangeLanguage
 			$_SESSION['ARTICLE_LANGUAGE'] = $this->Input->get('alng');
 			$this->redirect(preg_replace('@[?|&]alng='.$this->Input->get('alng').'@', '', $this->Environment->request));
 		}
-		
+
 		global $objPage;
 		$time = time();
 		$arrLang = array();
-		
+
 		// Prepare custom language texts
 		$this->customLanguageText = deserialize($this->customLanguageText);
 		if (!is_array($this->customLanguageText)) $this->customLanguageText = array();
@@ -70,23 +65,23 @@ class ModuleArticleLanguage extends ModuleChangeLanguage
 		{
 			$customLanguageText[strtolower($arrText['value'])] = $arrText;
 		}
-		
+
 		$objArticles = $this->Database->prepare("SELECT p.*, a.language AS alng FROM tl_article a LEFT OUTER JOIN tl_page p ON a.pid=p.id WHERE (a.pid=? OR a.pid=?)" . (!BE_USER_LOGGED_IN ? " AND (a.start='' OR a.start<?) AND (a.stop='' OR a.stop>?) AND a.published=1" : "") . " GROUP BY a.language ORDER BY a.sorting")
 									  ->execute($objPage->id, $objPage->languageMain, $time, $time);
-									  
+
 		$c = 0;
 		$count = $objArticles->numRows;
-										  
+
 		while( $objArticles->next() )
 		{
 			if (strlen($_SESSION['ARTICLE_LANGUAGE']) && $objArticles->alng == $_SESSION['ARTICLE_LANGUAGE'])
 			{
 				$GLOBALS['TL_LANGUAGE'] = $_SESSION['ARTICLE_LANGUAGE'];
 			}
-			
+
 			if ($this->hideActiveLanguage && $objArticles->alng == $_SESSION['ARTICLE_LANGUAGE'])
 				continue;
-				
+
 			// Build template array
 			if (strlen($objArticles->alng))
 			{
@@ -103,7 +98,7 @@ class ModuleArticleLanguage extends ModuleChangeLanguage
 			else
 			{
 				$objRootPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->limit(1)->execute($objPage->rootId);
-				
+
 				$arrLang[$c] = array
 				(
 					'active'	=> !strlen($_SESSION['ARTICLE_LANGUAGE'] ? true : false),
@@ -114,10 +109,10 @@ class ModuleArticleLanguage extends ModuleChangeLanguage
 					'icon'		=> 'system/modules/changelanguage/media/images/'.$objRootPage->language.'.gif',
 				);
 			}
-			
+
 			$c++;
 		}
-		
+
 		if ($this->customLanguage && count($this->customLanguageText))
         {
 	        usort($arrLang, array($this, 'orderByCustom'));

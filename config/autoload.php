@@ -20,7 +20,25 @@
 
 
 /**
- * Frontend modules
+ * Register the namespace
  */
-$GLOBALS['FE_MOD']['miscellaneous']['articlelanguage'] = 'ModuleArticleLanguage';
+ClassLoader::addNamespace('ArticleLanguage');
 
+
+/**
+ * Register the classes
+ */
+ClassLoader::addClasses(array
+(
+	'Contao\ModuleArticleLanguage' => 'system/modules/articlelanguage/ModuleArticleLanguage.php',
+	'ArticleLanguage\ArticleModel' => 'system/modules/articlelanguage/models/ArticleModel.php',
+));
+
+
+/**
+ * Register the templates
+ */
+TemplateLoader::addFiles(array
+(
+	'mod_articlelanguage' => 'system/modules/articlelanguage/templates'
+));
